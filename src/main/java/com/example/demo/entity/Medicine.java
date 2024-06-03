@@ -3,7 +3,6 @@ package com.example.demo.entity;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
-import java.util.Date;
 
 @Entity
 @Table
@@ -31,10 +30,15 @@ public class Medicine {
     @Column
         private BigDecimal price;
 
+
+//    @OneToOne(cascade = CascadeType.ALL)
+//    @JoinColumn(name = "pharmacy_id", referencedColumnName = "id")
+//    private PharmacyMedicine pharmacy;
+
     public Medicine() {
     }
 
-    public Medicine(Integer id, String brandName,String genericName, String manufacturer, String dosage, String ingredients,BigDecimal price) {
+    public Medicine(Integer id, String brandName,String genericName, String manufacturer, String dosage, String ingredients,BigDecimal price ) {
         this.id = id;
         this.brandName = brandName;
         this.genericName = genericName;
@@ -42,6 +46,7 @@ public class Medicine {
         this.dosage = dosage;
         this.ingredients = ingredients;
         this.price = price;
+//        this.pharmacy = pharmacy;
     }
 
     public Integer getId() {
@@ -100,7 +105,18 @@ public class Medicine {
         this.genericName = genericName;
     }
 
+//    public PharmacyMedicine getPharmacy() {
+//        return pharmacy;
+//    }
+//
+//    public void setPharmacy(PharmacyMedicine pharmacy) {
+//        this.pharmacy = pharmacy;
+//    }
+
+
     public String toString(){
         return "Medicine{ id="+id+ "name"+brandName+"manufacturer="+manufacturer;
     }
+
+
 }

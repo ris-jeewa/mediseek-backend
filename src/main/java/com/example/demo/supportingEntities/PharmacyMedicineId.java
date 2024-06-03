@@ -10,8 +10,10 @@ import java.io.Serializable;
 @Embeddable
 public class PharmacyMedicineId implements Serializable {
 
+    @Column(name="pharmacy_id")
     private int pharmacyId;
 
+    @Column(name="medicine_id")
     private int medicineId;
 
     public PharmacyMedicineId() {
@@ -37,4 +39,6 @@ public class PharmacyMedicineId implements Serializable {
     public void setMedicineId(int medicineId) {
         this.medicineId = medicineId;
     }
+
+
 }

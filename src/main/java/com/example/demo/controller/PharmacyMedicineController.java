@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -27,8 +28,16 @@ public class PharmacyMedicineController {
 //        return repository.findAll();
 //    }
     @GetMapping("/{medicineId}")
-    public List<PharmacyMedicine> getIds(@PathVariable int medicineId){
-        return repository.findAllById_MedicineId(medicineId);
+    public List<Integer> getIds(@PathVariable int medicineId){
+        List<PharmacyMedicine> list = repository.findAllById_MedicineId(medicineId);
+        List<Integer> ids = new ArrayList<Integer>();
+        if (list != null){
+            for (PharmacyMedicine pm : list){
+                ids.add(pm.getId().getPharmacyId());
+            }
+        }
+        return ids;
+        
     }
 //    @GetMapping("/{id}")
 //    public ResponseEntity<Optional<PharmacyMedicine>> getPharmacyMedicineById(@PathVariable PharmacyMedicineId id){
