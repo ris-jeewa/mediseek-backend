@@ -7,4 +7,5 @@ import java.util.List;
 
 public interface MedicineRepository extends JpaRepository<Medicine,Integer>{
     List<Medicine> findByBrandName(String brandName);
+    List<Medicine> findByGenericName(String genericName);
 }

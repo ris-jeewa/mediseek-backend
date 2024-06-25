@@ -1,9 +1,7 @@
 package com.example.demo.controller;
 
 import com.example.demo.entity.Medicine;
-import com.example.demo.entity.Pharmacy;
 import com.example.demo.service.MedicineService;
-import com.example.demo.service.PharmacyService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -54,5 +52,10 @@ public class MedicineController {
     @GetMapping("/{brandName}")
     public ResponseEntity<List<Medicine>> findMedicineByName(@PathVariable String brandName){
         return ResponseEntity.ok(medicineService.findMedicineByName(brandName));
+    }
+
+    @GetMapping("/{genericName}")
+    public ResponseEntity<List<Medicine>> findMedicineByGenName(@PathVariable String genericName){
+        return ResponseEntity.ok(medicineService.findMedicineByGenName(genericName));
     }
 }

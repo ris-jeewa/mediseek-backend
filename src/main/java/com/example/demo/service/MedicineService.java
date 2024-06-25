@@ -2,11 +2,9 @@ package com.example.demo.service;
 
 import com.example.demo.entity.Medicine;
 import com.example.demo.exception.IdNotFoundException;
-import com.example.demo.exception.IdNotFoundException;
 import com.example.demo.repository.MedicineRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.ErrorResponseException;
 
 import java.util.List;
 import java.util.Optional;
@@ -81,6 +79,10 @@ public class MedicineService {
 
     public List<Medicine> findMedicineByName(String brandName){
         return mediRepository.findByBrandName(brandName);
+    }
+
+    public List<Medicine> findMedicineByGenName(String genericName){
+        return mediRepository.findByGenericName(genericName);
     }
 
 }
