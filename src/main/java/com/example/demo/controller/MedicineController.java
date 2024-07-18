@@ -49,13 +49,12 @@ public class MedicineController {
         return ResponseEntity.ok(medicineService.deleteById(id));
     }
 
-    @GetMapping("/{brandName}")
-    public ResponseEntity<List<Medicine>> findMedicineByName(@PathVariable String brandName){
-        return ResponseEntity.ok(medicineService.findMedicineByName(brandName));
-    }
-
-    @GetMapping("/{genericName}")
-    public ResponseEntity<List<Medicine>> findMedicineByGenName(@PathVariable String genericName){
-        return ResponseEntity.ok(medicineService.findMedicineByGenName(genericName));
+    @GetMapping("/search/{name}")
+    public ResponseEntity<List<Medicine>> findMedicineByName(@PathVariable String name,@RequestParam boolean isGeneric){
+        if (isGeneric){
+            return ResponseEntity.ok(medicineService.findMedicineByGenName(name));
+        }else {
+            return ResponseEntity.ok(medicineService.findMedicineByName(name));
+        }
     }
 }
