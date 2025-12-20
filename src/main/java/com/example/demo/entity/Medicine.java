@@ -1,122 +1,53 @@
 package com.example.demo.entity;
 
 import jakarta.persistence.*;
-
-import java.math.BigDecimal;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
-@Table
+@Table(name = "Medicine")
+@Getter
+@Setter
 public class Medicine {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column
-    private int id;
+    private Long id;
 
-    @Column
-    private String brandName;
+    @Column(name = "name", nullable = false)
+    private String name;
 
-    @Column
+    @Column(name = "generic_name")
     private String genericName;
 
-    @Column
-    private String manufacturer;
+    @Column(name = "brand")
+    private String brand;
 
-    @Column
-    private String dosage;
+    @Column(name = "dosage_form", nullable = false)
+    private String dosageForm;
 
-    @Column
-    private String ingredients;
+    @Column(name = "strength")
+    private String strength;
 
-    @Column
-        private BigDecimal price;
+    @Column(name = "category")
+    private String category;
 
-
-//    @OneToOne(cascade = CascadeType.ALL)
-//    @JoinColumn(name = "pharmacy_id", referencedColumnName = "id")
-//    private PharmacyMedicine pharmacy;
+    @Column(name = "description", columnDefinition = "TEXT")
+    private String description;
 
     public Medicine() {
     }
 
-    public Medicine(Integer id, String brandName,String genericName, String manufacturer, String dosage, String ingredients,BigDecimal price ) {
+    public Medicine(Long id, String name, String genericName, String brand, String dosageForm,
+                   String strength, String category, String description) {
         this.id = id;
-        this.brandName = brandName;
+        this.name = name;
         this.genericName = genericName;
-        this.manufacturer = manufacturer;
-        this.dosage = dosage;
-        this.ingredients = ingredients;
-        this.price = price;
-//        this.pharmacy = pharmacy;
+        this.brand = brand;
+        this.dosageForm = dosageForm;
+        this.strength = strength;
+        this.category = category;
+        this.description = description;
     }
 
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return brandName;
-    }
-
-    public void setName(String brandName) {
-        this.brandName = brandName;
-    }
-
-    public String getManufacturer() {
-        return manufacturer;
-    }
-
-    public void setManufacturer(String manufacturer) {
-        this.manufacturer = manufacturer;
-    }
-
-    public String getDosage() {
-        return dosage;
-    }
-
-    public void setDosage(String dosage) {
-        this.dosage = dosage;
-    }
-
-    public String getIngredients() {
-        return ingredients;
-    }
-
-    public void setIngredients(String ingredients) {
-        this.ingredients = ingredients;
-    }
-
-    public BigDecimal getPrice() {
-        return price;
-    }
-
-    public void setPrice(BigDecimal price) {
-        this.price = price;
-    }
-
-    public String getGenericName() {
-        return genericName;
-    }
-
-    public void setGenericName(String genericName) {
-        this.genericName = genericName;
-    }
-
-//    public PharmacyMedicine getPharmacy() {
-//        return pharmacy;
-//    }
-//
-//    public void setPharmacy(PharmacyMedicine pharmacy) {
-//        this.pharmacy = pharmacy;
-//    }
-
-
-    public String toString(){
-        return "Medicine{ id="+id+ "name"+brandName+"manufacturer="+manufacturer;
-    }
-
-
+  
 }

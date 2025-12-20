@@ -29,8 +29,8 @@ public class MedicineController {
         return ResponseEntity.ok(medicineService.getMedicineList());
     }
 
-    @GetMapping("/getmedicine")
-    public ResponseEntity<Medicine> findById(int id){
+    @GetMapping("/getmedicine/{id}")
+    public ResponseEntity<Medicine> findById(@PathVariable Long id){
         return ResponseEntity.ok((medicineService.getMedicineById(id)));
     }
 
@@ -45,16 +45,12 @@ public class MedicineController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteMedicine(@PathVariable int id) {
+    public ResponseEntity<String> deleteMedicine(@PathVariable Long id) {
         return ResponseEntity.ok(medicineService.deleteById(id));
     }
 
-    @GetMapping("/search/{name}")
-    public ResponseEntity<List<Medicine>> findMedicineByName(@PathVariable String name,@RequestParam boolean isGeneric){
-        if (isGeneric){
-            return ResponseEntity.ok(medicineService.findMedicineByGenName(name));
-        }else {
-            return ResponseEntity.ok(medicineService.findMedicineByName(name));
-        }
+    @GetMapping("/search")
+    public List<Medicine> search(@RequestParam String q) {
+        return medicineService.searchMedicine(q);
     }
 }
