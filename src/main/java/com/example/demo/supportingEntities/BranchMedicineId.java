@@ -2,10 +2,15 @@ package com.example.demo.supportingEntities;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.io.Serializable;
 import java.util.Objects;
 
 @Embeddable
+@Getter
+@Setter
 public class BranchMedicineId implements Serializable {
 
     @Column(name = "branch_id")
@@ -19,22 +24,6 @@ public class BranchMedicineId implements Serializable {
 
     public BranchMedicineId(Long branchId, Long medicineId) {
         this.branchId = branchId;
-        this.medicineId = medicineId;
-    }
-
-    public Long getBranchId() {
-        return branchId;
-    }
-
-    public void setBranchId(Long branchId) {
-        this.branchId = branchId;
-    }
-
-    public Long getMedicineId() {
-        return medicineId;
-    }
-
-    public void setMedicineId(Long medicineId) {
         this.medicineId = medicineId;
     }
 
