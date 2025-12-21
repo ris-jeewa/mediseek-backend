@@ -1,89 +1,46 @@
 package com.example.demo.entity;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.List;
 
 @Entity
-@Table
+@Table(name = "Pharmacy")
+@Getter
+@Setter
 public class Pharmacy {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
-    @Column
+    private Long id;
+
+    @Column(name = "name", nullable = false)
     private String name;
 
-    @Column
-    private String location;
+    @Column(name = "registration_number", unique = true)
+    private String registrationNumber;
 
-    @Column
-    private String contactNum;
+    @Column(name = "contact_number")
+    private String contactNumber;
 
-    @Column
-    private String openHours;
+    @Column(name = "is_active", nullable = false)
+    private Boolean isActive = true;
 
-    @Column
-    private  String stock;
-
+    @OneToMany(mappedBy = "pharmacy", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PharmacyBranch> branches;
 
     public Pharmacy() {
     }
 
-    public Pharmacy(int id, String name, String location, String contactNum, String openHours, String stock) {
+    public Pharmacy(Long id, String name, String registrationNumber, String contactNumber, Boolean isActive) {
         this.id = id;
         this.name = name;
-        this.location = location;
-        this.contactNum = contactNum;
-        this.openHours = openHours;
-        this.stock = stock;
+        this.registrationNumber = registrationNumber;
+        this.contactNumber = contactNumber;
+        this.isActive = isActive;
     }
 
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getLocation() {
-        return location;
-    }
-
-    public void setLocation(String location) {
-        this.location = location;
-    }
-
-    public String getContactNum() {
-        return contactNum;
-    }
-
-    public void setContactNum(String contactNum) {
-        this.contactNum = contactNum;
-    }
-
-    public String getOpenHours() {
-        return openHours;
-    }
-
-    public void setOpenHours(String openHours) {
-        this.openHours = openHours;
-    }
-
-    public String getStock() {
-        return stock;
-    }
-
-    public void setStock(String stock) {
-        this.stock = stock;
-    }
+   
 }

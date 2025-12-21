@@ -1,9 +1,7 @@
 package com.example.demo.controller;
 
 import com.example.demo.entity.Medicine;
-import com.example.demo.entity.Pharmacy;
 import com.example.demo.service.MedicineService;
-import com.example.demo.service.PharmacyService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -31,8 +29,8 @@ public class MedicineController {
         return ResponseEntity.ok(medicineService.getMedicineList());
     }
 
-    @GetMapping("/getmedicine")
-    public ResponseEntity<Medicine> findById(int id){
+    @GetMapping("/getmedicine/{id}")
+    public ResponseEntity<Medicine> findById(@PathVariable Long id){
         return ResponseEntity.ok((medicineService.getMedicineById(id)));
     }
 
@@ -47,12 +45,12 @@ public class MedicineController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteMedicine(@PathVariable int id) {
+    public ResponseEntity<String> deleteMedicine(@PathVariable Long id) {
         return ResponseEntity.ok(medicineService.deleteById(id));
     }
 
-    @GetMapping("/{brandName}")
-    public ResponseEntity<List<Medicine>> findMedicineByName(@PathVariable String brandName){
-        return ResponseEntity.ok(medicineService.findMedicineByName(brandName));
+    @GetMapping("/search")
+    public List<Medicine> search(@RequestParam String q) {
+        return medicineService.searchMedicine(q);
     }
 }
