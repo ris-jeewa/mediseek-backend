@@ -6,10 +6,14 @@ import lombok.Setter;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 @Entity
 @Table(name = "Pharmacy")
 @Getter
 @Setter
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Pharmacy {
 
     @Id
@@ -29,6 +33,7 @@ public class Pharmacy {
     private Boolean isActive = true;
 
     @OneToMany(mappedBy = "pharmacy", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     private List<PharmacyBranch> branches;
 
     public Pharmacy() {
