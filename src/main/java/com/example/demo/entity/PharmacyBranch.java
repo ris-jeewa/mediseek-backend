@@ -4,6 +4,9 @@ import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -11,6 +14,7 @@ import lombok.Setter;
 @Table(name = "Pharmacy_Branch")
 @Getter
 @Setter
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class PharmacyBranch {
 
     @Id
@@ -49,6 +53,7 @@ public class PharmacyBranch {
     private Boolean isActive = true;
 
     @OneToMany(mappedBy = "branch", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     private List<BranchMedicine> medicines;
 
     public PharmacyBranch() {
