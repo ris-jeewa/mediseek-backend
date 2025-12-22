@@ -1,5 +1,6 @@
 package com.example.demo.service;
 
+import com.example.demo.dto.PharmacyBranchDTO;
 import com.example.demo.entity.PharmacyBranch;
 import com.example.demo.exception.IdNotFoundException;
 import com.example.demo.repository.PharmacyBranchRepository;
@@ -8,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class PharmacyBranchService {
@@ -22,8 +24,26 @@ public class PharmacyBranchService {
         return repository.saveAll(branches);
     }
 
-    public List<PharmacyBranch> getAllBranches(){
-        return repository.findAll();
+    public List<PharmacyBranchDTO> getAllBranches(){
+        return repository.findAll().stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
+    private PharmacyBranchDTO convertToDTO(PharmacyBranch branch) {
+        PharmacyBranchDTO dto = new PharmacyBranchDTO();
+        dto.setId(branch.getId());
+        dto.setPharmacy_id(branch.getPharmacy() != null ? branch.getPharmacy().getId() : null);
+        dto.setBranchName(branch.getBranchName());
+        dto.setAddress(branch.getAddress());
+        dto.setCity(branch.getCity());
+        dto.setLatitude(branch.getLatitude());
+        dto.setLongitude(branch.getLongitude());
+        dto.setMapsUrl(branch.getMapsUrl());
+        dto.setContactNumber(branch.getContactNumber());
+        dto.setOpeningHours(branch.getOpeningHours());
+        dto.setIsActive(branch.getIsActive());
+        return dto;
     }
 
     public PharmacyBranch getBranchById(Long id){
