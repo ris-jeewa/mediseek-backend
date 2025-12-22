@@ -1,5 +1,6 @@
 package com.example.demo.service;
 
+import com.example.demo.dto.BranchDTO;
 import com.example.demo.dto.PharmacyBranchDTO;
 import com.example.demo.entity.PharmacyBranch;
 import com.example.demo.exception.IdNotFoundException;
@@ -30,22 +31,6 @@ public class PharmacyBranchService {
                 .collect(Collectors.toList());
     }
 
-    private PharmacyBranchDTO convertToDTO(PharmacyBranch branch) {
-        PharmacyBranchDTO dto = new PharmacyBranchDTO();
-        dto.setId(branch.getId());
-        dto.setPharmacy_id(branch.getPharmacy() != null ? branch.getPharmacy().getId() : null);
-        dto.setBranchName(branch.getBranchName());
-        dto.setAddress(branch.getAddress());
-        dto.setCity(branch.getCity());
-        dto.setLatitude(branch.getLatitude());
-        dto.setLongitude(branch.getLongitude());
-        dto.setMapsUrl(branch.getMapsUrl());
-        dto.setContactNumber(branch.getContactNumber());
-        dto.setOpeningHours(branch.getOpeningHours());
-        dto.setIsActive(branch.getIsActive());
-        return dto;
-    }
-
     public PharmacyBranchDTO getBranchById(Long id){
         PharmacyBranch branch = repository.findById(id).orElse(null);
         if (branch != null) {
@@ -54,12 +39,18 @@ public class PharmacyBranchService {
         return null;
     }
 
-    public List<PharmacyBranch> getBranchesByPharmacyId(Long pharmacyId){
-        return repository.findByPharmacyId(pharmacyId);
+    public List<BranchDTO> getBranchesByPharmacyId(Long pharmacyId){
+        List<PharmacyBranch> branches = repository.findByPharmacyId(pharmacyId);
+        return branches.stream()
+                .map(this::convertToBranchDTO)
+                .collect(Collectors.toList());
     }
 
-    public List<PharmacyBranch> getActiveBranches(){
-        return repository.findByIsActiveTrue();
+    public List<BranchDTO> getActiveBranches(){
+        List<PharmacyBranch> branches = repository.findByIsActiveTrue();
+        return branches.stream()
+                .map(this::convertToBranchDTO)
+                .collect(Collectors.toList());
     }
 
     public PharmacyBranch updateBranch(PharmacyBranch branch){
@@ -80,6 +71,37 @@ public class PharmacyBranchService {
         }else {
             throw new IdNotFoundException("Invalid branch Id");
         }
+    }
+
+    private PharmacyBranchDTO convertToDTO(PharmacyBranch branch) {
+        PharmacyBranchDTO dto = new PharmacyBranchDTO();
+        dto.setId(branch.getId());
+        dto.setPharmacy_id(branch.getPharmacy() != null ? branch.getPharmacy().getId() : null);
+        dto.setBranchName(branch.getBranchName());
+        dto.setAddress(branch.getAddress());
+        dto.setCity(branch.getCity());
+        dto.setLatitude(branch.getLatitude());
+        dto.setLongitude(branch.getLongitude());
+        dto.setMapsUrl(branch.getMapsUrl());
+        dto.setContactNumber(branch.getContactNumber());
+        dto.setOpeningHours(branch.getOpeningHours());
+        dto.setIsActive(branch.getIsActive());
+        return dto;
+    }
+
+    private BranchDTO convertToBranchDTO(PharmacyBranch branch) {
+        BranchDTO dto = new BranchDTO();
+        dto.setId(branch.getId());
+        dto.setBranchName(branch.getBranchName());
+        dto.setAddress(branch.getAddress());
+        dto.setCity(branch.getCity());
+        dto.setLatitude(branch.getLatitude());
+        dto.setLongitude(branch.getLongitude());
+        dto.setMapsUrl(branch.getMapsUrl());
+        dto.setContactNumber(branch.getContactNumber());
+        dto.setOpeningHours(branch.getOpeningHours());
+        dto.setIsActive(branch.getIsActive());
+        return dto;
     }
 }
 
