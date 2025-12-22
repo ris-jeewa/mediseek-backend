@@ -46,8 +46,12 @@ public class PharmacyBranchService {
         return dto;
     }
 
-    public PharmacyBranch getBranchById(Long id){
-        return repository.findById(id).orElse(null);
+    public PharmacyBranchDTO getBranchById(Long id){
+        PharmacyBranch branch = repository.findById(id).orElse(null);
+        if (branch != null) {
+            return convertToDTO(branch);
+        }
+        return null;
     }
 
     public List<PharmacyBranch> getBranchesByPharmacyId(Long pharmacyId){

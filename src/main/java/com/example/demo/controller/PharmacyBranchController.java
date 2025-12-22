@@ -31,7 +31,7 @@ public class PharmacyBranchController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<PharmacyBranch> getBranchById(@PathVariable Long id){
+    public ResponseEntity<PharmacyBranchDTO> getBranchById(@PathVariable Long id){
         return ResponseEntity.ok(service.getBranchById(id));
     }
 
