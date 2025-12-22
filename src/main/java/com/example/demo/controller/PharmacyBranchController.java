@@ -1,5 +1,6 @@
 package com.example.demo.controller;
 
+import com.example.demo.dto.PharmacyBranchDTO;
 import com.example.demo.entity.PharmacyBranch;
 import com.example.demo.service.PharmacyBranchService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +26,7 @@ public class PharmacyBranchController {
     }
 
     @GetMapping("/getAll")
-    public ResponseEntity<List<PharmacyBranch>> getAllBranches() {
+    public ResponseEntity<List<PharmacyBranchDTO>> getAllBranches() {
         return ResponseEntity.ok(service.getAllBranches());
     }
 
