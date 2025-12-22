@@ -42,7 +42,7 @@ public class PharmacyBranchController {
     }
 
     @GetMapping("/active")
-    public ResponseEntity<List<BranchDTO>> getActiveBranches(){
+    public ResponseEntity<List<PharmacyBranchDTO>> getActiveBranches(){
         return ResponseEntity.ok(service.getActiveBranches());
     }
 }

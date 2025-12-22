@@ -46,10 +46,10 @@ public class PharmacyBranchService {
                 .collect(Collectors.toList());
     }
 
-    public List<BranchDTO> getActiveBranches(){
+    public List<PharmacyBranchDTO> getActiveBranches(){
         List<PharmacyBranch> branches = repository.findByIsActiveTrue();
         return branches.stream()
-                .map(this::convertToBranchDTO)
+                .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
 
