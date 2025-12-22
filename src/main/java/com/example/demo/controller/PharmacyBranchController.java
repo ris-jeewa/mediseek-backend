@@ -1,5 +1,6 @@
 package com.example.demo.controller;
 
+import com.example.demo.dto.BranchDTO;
 import com.example.demo.dto.PharmacyBranchDTO;
 import com.example.demo.entity.PharmacyBranch;
 import com.example.demo.service.PharmacyBranchService;
@@ -36,12 +37,12 @@ public class PharmacyBranchController {
     }
 
     @GetMapping("/pharmacy/{pharmacyId}")
-    public ResponseEntity<List<PharmacyBranch>> getBranchesByPharmacyId(@PathVariable Long pharmacyId){
+    public ResponseEntity<List<BranchDTO>> getBranchesByPharmacyId(@PathVariable Long pharmacyId){
         return ResponseEntity.ok(service.getBranchesByPharmacyId(pharmacyId));
     }
 
     @GetMapping("/active")
-    public ResponseEntity<List<PharmacyBranch>> getActiveBranches(){
+    public ResponseEntity<List<BranchDTO>> getActiveBranches(){
         return ResponseEntity.ok(service.getActiveBranches());
     }
 }
