@@ -1,5 +1,6 @@
 package com.example.demo.service;
 
+import com.example.demo.dto.BranchMedicineDTO;
 import com.example.demo.entity.BranchMedicine;
 import com.example.demo.exception.DuplicateResourceException;
 import com.example.demo.exception.ResourceNotFoundException;
@@ -36,13 +37,33 @@ public class BranchMedicineService {
         return ids;
     }
 
-    public List<BranchMedicine> getBranchMedicinesByMedicineId(Long medicineId){
-        return repository.findAllById_MedicineId(medicineId);
+    public List<BranchMedicineDTO> getBranchMedicinesByMedicineId(Long medicineId){
+        List<BranchMedicine> branchMedicines = repository.findAllById_MedicineId(medicineId);
+        List<BranchMedicineDTO> dtos = new ArrayList<>();
+        long counter = 1;
+        
+        for (BranchMedicine branchMedicine : branchMedicines) {
+            BranchMedicineDTO dto = convertToDTO(branchMedicine, counter++);
+            dtos.add(dto);
+        }
+        
+        return dtos;
     }
 
-    public List<BranchMedicine> getBranchMedicinesByBranchId(Long branchId){
-        return repository.findAllById_BranchId(branchId);
+     public List<BranchMedicineDTO> getBranchMedicinesByBranchId(Long branchId){
+        List<BranchMedicine> branchMedicines = repository.findAllById_BranchId(branchId);
+        List<BranchMedicineDTO> dtos = new ArrayList<>();
+        long counter = 1;
+        
+        for (BranchMedicine branchMedicine : branchMedicines) {
+            BranchMedicineDTO dto = convertToDTO(branchMedicine, counter++);
+            dtos.add(dto);
+        }
+        
+        return dtos;
     }
+
+    
     
     public Optional<BranchMedicine> getBranchMedicineById(BranchMedicineId id){
         return repository.findById(id);
@@ -118,6 +139,34 @@ public class BranchMedicineService {
 
     public List<BranchMedicine> getAllBranchMedicines(){
         return repository.findAll();
+    }
+
+    private BranchMedicineDTO convertToDTO(BranchMedicine branchMedicine, Long id) {
+        BranchMedicineDTO dto = new BranchMedicineDTO();
+        
+        Long branchId = branchMedicine.getId().getBranchId();
+        Long medicineId = branchMedicine.getId().getMedicineId();
+        
+        dto.setId(id);
+        dto.setBranchId(branchId);
+        dto.setMedicineId(medicineId);
+        
+        // Medicine fields
+        if (branchMedicine.getMedicine() != null) {
+            dto.setGenericName(branchMedicine.getMedicine().getGenericName());
+            dto.setBrand(branchMedicine.getMedicine().getBrand());
+            dto.setDosageForm(branchMedicine.getMedicine().getDosageForm());
+            dto.setStrength(branchMedicine.getMedicine().getStrength());
+            dto.setCategory(branchMedicine.getMedicine().getCategory());
+            dto.setDescription(branchMedicine.getMedicine().getDescription());
+        }
+        
+        // BranchMedicine fields
+        dto.setPrice(branchMedicine.getPrice());
+        dto.setStockQuantity(branchMedicine.getStockQuantity());
+        dto.setLastUpdated(branchMedicine.getLastUpdated());
+        
+        return dto;
     }
 }
 
