@@ -33,4 +33,9 @@ public class PharmacyController {
     public ResponseEntity<Pharmacy> getPharmacyById(@PathVariable Long id){
         return ResponseEntity.ok(service.getPharmacyById(id));
     }
+
+    @GetMapping("/by-medicine/{medicineId}")
+    public ResponseEntity<List<Pharmacy>> getPharmaciesByMedicineId(@PathVariable Long medicineId){
+        return ResponseEntity.ok(service.getPharmaciesByMedicineId(medicineId));
+    }
 }

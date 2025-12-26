@@ -1,21 +1,37 @@
 package com.example.demo.service;
 
+import com.example.demo.entity.BranchMedicine;
 import com.example.demo.entity.Pharmacy;
+import com.example.demo.entity.PharmacyBranch;
 import com.example.demo.exception.DuplicateResourceException;
 import com.example.demo.exception.IdNotFoundException;
+import com.example.demo.exception.ResourceNotFoundException;
+import com.example.demo.repository.BranchMedicineRepository;
+import com.example.demo.repository.PharmacyBranchRepository;
 import com.example.demo.repository.PharmacyRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class PharmacyService {
     @Autowired
     private PharmacyRepository repository;
+
+    @Autowired
+    private BranchMedicineRepository branchMedicineRepository;
+
+    @Autowired
+    private PharmacyBranchRepository pharmacyBranchRepository;
+
+    @Autowired
+    private BranchMedicineService branchMedicineService;
 
     private void validateRegistrationNumber(String regNumber) {
         if (regNumber != null && !regNumber.trim().isEmpty() &&
@@ -94,5 +110,35 @@ public class PharmacyService {
         } else {
             throw new IdNotFoundException("Invalid pharmacy Id");
         }
+    }
+
+    @Transactional(readOnly = true)
+    public List<Pharmacy> getPharmaciesByMedicineId(Long medicineId) {
+        // Get all BranchMedicine records for the given medicineId
+        // List<BranchMedicine> branchMedicines = branchMedicineRepository.findAllById_MedicineId(medicineId);
+        
+        // if (branchMedicines.isEmpty()) {
+        //     throw new ResourceNotFoundException("No branches found for medicine with id " + medicineId);
+        // }
+
+        // // Extract unique branch IDs
+        // Set<Long> branchIds = branchMedicines.stream()
+        //         .map(bm -> bm.getId().getBranchId())
+        //         .collect(Collectors.toSet());
+
+        List<Long> branchIds = branchMedicineService.getBranchIdsByMedicineId(medicineId);
+
+        // Get all PharmacyBranch records for those branch IDs
+        List<PharmacyBranch> branches = pharmacyBranchRepository.findAllById(branchIds);
+
+        // Extract unique pharmacy IDs
+        Set<Long> pharmacyIds = branches.stream()
+                .map(branch -> branch.getPharmacy().getId())
+                .collect(Collectors.toSet());
+
+        // Get all Pharmacy entities for those pharmacy IDs
+        List<Pharmacy> pharmacies = repository.findAllById(pharmacyIds);
+
+        return pharmacies;
     }
 }
