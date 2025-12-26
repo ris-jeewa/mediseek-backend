@@ -1,7 +1,7 @@
 package com.example.demo.controller;
 
+import com.example.demo.dto.BranchMedicineDTO;
 import com.example.demo.entity.BranchMedicine;
-import com.example.demo.repository.BranchMedicineRepository;
 import com.example.demo.service.BranchMedicineService;
 import com.example.demo.supportingEntities.BranchMedicineId;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,12 +44,12 @@ public class BranchMedicineController {
     }
 
     @GetMapping("/branch/{branchId}")
-    public ResponseEntity<List<BranchMedicine>> getByBranchId(@PathVariable Long branchId){
+    public ResponseEntity<List<BranchMedicineDTO>> getByBranchId(@PathVariable Long branchId){
         return ResponseEntity.ok(service.getBranchMedicinesByBranchId(branchId));
     }
 
     @GetMapping("/medicine/{medicineId}")
-    public ResponseEntity<List<BranchMedicine>> getByMedicineId(@PathVariable Long medicineId){
+    public ResponseEntity<List<BranchMedicineDTO>> getByMedicineId(@PathVariable Long medicineId){
         return ResponseEntity.ok(service.getBranchMedicinesByMedicineId(medicineId));
     }
 
