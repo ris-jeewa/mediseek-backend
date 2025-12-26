@@ -1,6 +1,7 @@
 package com.example.demo.service;
 
 import com.example.demo.dto.BranchMedicineDTO;
+import com.example.demo.dto.BranchMedicineRequestDTO;
 import com.example.demo.entity.BranchMedicine;
 import com.example.demo.exception.DuplicateResourceException;
 import com.example.demo.exception.ResourceNotFoundException;
@@ -69,39 +70,42 @@ public class BranchMedicineService {
         return repository.findById(id);
     }
 
-    public BranchMedicine createBranchMedicine(BranchMedicine branchMedicine){
-        // Validate branch exists
-        Long branchId = branchMedicine.getBranch() != null ? branchMedicine.getBranch().getId() : null;
-        if (branchId == null) {
+    public BranchMedicine createBranchMedicine(BranchMedicineRequestDTO request){
+        if (request.getBranchId() == null) {
             throw new ResourceNotFoundException("Branch ID is required");
         }
-        
-        // Fetch and validate branch
-        var branch = branchRepository.findById(branchId)
-            .orElseThrow(() -> new ResourceNotFoundException("Pharmacy branch with id " + branchId + " not found"));
-        
-        // Validate medicine exists
-        Long medicineId = branchMedicine.getMedicine() != null ? branchMedicine.getMedicine().getId() : null;
-        if (medicineId == null) {
+    
+        if (request.getMedicineId() == null) {
             throw new ResourceNotFoundException("Medicine ID is required");
         }
-        
-        // Fetch and validate medicine
-        var medicine = medicineRepository.findById(medicineId)
-            .orElseThrow(() -> new ResourceNotFoundException("Medicine with id " + medicineId + " not found"));
-
-        // Check if combination already exists
-        BranchMedicineId id = new BranchMedicineId(branchId, medicineId);
+    
+        var branch = branchRepository.findById(request.getBranchId())
+            .orElseThrow(() -> new ResourceNotFoundException(
+                "Pharmacy branch with id " + request.getBranchId() + " not found"));
+    
+        var medicine = medicineRepository.findById(request.getMedicineId())
+            .orElseThrow(() -> new ResourceNotFoundException(
+                "Medicine with id " + request.getMedicineId() + " not found"));
+    
+        BranchMedicineId id = new BranchMedicineId(
+            request.getBranchId(),
+            request.getMedicineId()
+        );
+    
         if (repository.existsById(id)) {
-            throw new DuplicateResourceException("BranchMedicine with branchId " + branchId + " and medicineId " + medicineId + " already exists");
+            throw new DuplicateResourceException(
+                "BranchMedicine already exists for this branch and medicine"
+            );
         }
-
-        // Set the composite ID and ensure branch/medicine objects are set
-        branchMedicine.setId(id);
-        branchMedicine.setBranch(branch);
-        branchMedicine.setMedicine(medicine);
-        
-        return repository.save(branchMedicine);
+    
+        BranchMedicine bm = new BranchMedicine();
+        bm.setId(id);
+        bm.setBranch(branch);
+        bm.setMedicine(medicine);
+        bm.setPrice(request.getPrice());
+        bm.setStockQuantity(request.getStockQuantity());
+    
+        return repository.save(bm);
     }
 
     public BranchMedicine updateBranchMedicine(BranchMedicineId id, BranchMedicine branchMedicine){
@@ -137,8 +141,16 @@ public class BranchMedicineService {
         }
     }
 
-    public List<BranchMedicine> getAllBranchMedicines(){
-        return repository.findAll();
+    public List<BranchMedicineDTO> getAllBranchMedicines(){
+        List<BranchMedicine> branchMedicines = repository.findAll();
+        List<BranchMedicineDTO> dtos = new ArrayList<>();
+        long counter = 1;
+        
+        for (BranchMedicine branchMedicine : branchMedicines) {
+            BranchMedicineDTO dto = convertToDTO(branchMedicine, counter++);
+            dtos.add(dto);
+        }
+        return dtos;
     }
 
     private BranchMedicineDTO convertToDTO(BranchMedicine branchMedicine, Long id) {
