@@ -1,6 +1,7 @@
 package com.example.demo.controller;
 
 import com.example.demo.dto.BranchMedicineDTO;
+import com.example.demo.dto.BranchMedicineRequestDTO;
 import com.example.demo.entity.BranchMedicine;
 import com.example.demo.service.BranchMedicineService;
 import com.example.demo.supportingEntities.BranchMedicineId;
@@ -18,8 +19,8 @@ public class BranchMedicineController {
     private BranchMedicineService service;
 
     @PostMapping("/create")
-    public ResponseEntity<BranchMedicine> create(@RequestBody BranchMedicine branchMedicine){
-        return ResponseEntity.ok(service.createBranchMedicine(branchMedicine));
+    public ResponseEntity<BranchMedicine> create(@RequestBody BranchMedicineRequestDTO request){
+        return ResponseEntity.ok(service.createBranchMedicine(request));
     }
 
     @PutMapping("/update/{branchId}/{medicineId}")
@@ -54,7 +55,7 @@ public class BranchMedicineController {
     }
 
     @GetMapping("/getAll")
-    public ResponseEntity<List<BranchMedicine>> getAllBranchMedicines(){
+    public ResponseEntity<List<BranchMedicineDTO>> getAllBranchMedicines(){
         return ResponseEntity.ok(service.getAllBranchMedicines());
     }
 }
