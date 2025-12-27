@@ -34,7 +34,6 @@ public class MedicineService {
         Optional<Medicine> foundMedi = mediRepository.findById(medicine.getId());
         if (foundMedi.isPresent()){
             Medicine updatedMedi = foundMedi.get();
-            updatedMedi.setName(medicine.getName());
             updatedMedi.setGenericName(medicine.getGenericName());
             updatedMedi.setBrand(medicine.getBrand());
             updatedMedi.setDosageForm(medicine.getDosageForm());
@@ -54,9 +53,6 @@ public class MedicineService {
         if (foundMedi.isPresent()){
             Medicine updateMedi = foundMedi.get();
 
-            if (medicine.getName() != null && medicine.getName().length() > 0){
-                updateMedi.setName(medicine.getName());
-            }
             if (medicine.getGenericName() != null && medicine.getGenericName().length() > 0){
                 updateMedi.setGenericName(medicine.getGenericName());
             }
@@ -96,7 +92,7 @@ public class MedicineService {
 
     public List<Medicine> searchMedicine(String keyword) {
         return mediRepository
-            .findByGenericNameContainingIgnoreCaseOrNameContainingIgnoreCase(
+            .findByGenericNameContainingIgnoreCaseOrBrandContainingIgnoreCase(
                 keyword, keyword
             );
     }

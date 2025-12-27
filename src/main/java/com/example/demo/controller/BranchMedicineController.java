@@ -1,12 +1,14 @@
 package com.example.demo.controller;
 
+import com.example.demo.dto.BranchMedicineDTO;
+import com.example.demo.dto.BranchMedicineRequestDTO;
 import com.example.demo.entity.BranchMedicine;
-import com.example.demo.repository.BranchMedicineRepository;
+import com.example.demo.service.BranchMedicineService;
+import com.example.demo.supportingEntities.BranchMedicineId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -14,28 +16,47 @@ import java.util.List;
 public class BranchMedicineController {
 
     @Autowired
-    private BranchMedicineRepository repository;
+    private BranchMedicineService service;
+
+    @PostMapping("/create")
+    public ResponseEntity<BranchMedicine> create(@RequestBody BranchMedicineRequestDTO request){
+        return ResponseEntity.ok(service.createBranchMedicine(request));
+    }
+
+    @PutMapping("/update/{branchId}/{medicineId}")
+    public ResponseEntity<BranchMedicine> update(
+            @PathVariable Long branchId,
+            @PathVariable Long medicineId,
+            @RequestBody BranchMedicine branchMedicine){
+        BranchMedicineId id = new BranchMedicineId(branchId, medicineId);
+        return ResponseEntity.ok(service.updateBranchMedicine(id, branchMedicine));
+    }
+
+    @DeleteMapping("/{branchId}/{medicineId}")
+    public ResponseEntity<String> delete(
+            @PathVariable Long branchId,
+            @PathVariable Long medicineId){
+        return ResponseEntity.ok(service.deleteBranchMedicine(branchId, medicineId));
+    }
 
     @GetMapping("/{medicineId}")
     public List<Long> getBranchIds(@PathVariable Long medicineId){
-        List<BranchMedicine> list = repository.findAllById_MedicineId(medicineId);
-        List<Long> ids = new ArrayList<>();
-        if (list != null){
-            for (BranchMedicine bm : list){
-                ids.add(bm.getId().getBranchId());
-            }
-        }
-        return ids;
+        return service.getBranchIdsByMedicineId(medicineId);
     }
 
     @GetMapping("/branch/{branchId}")
-    public ResponseEntity<List<BranchMedicine>> getByBranchId(@PathVariable Long branchId){
-        return ResponseEntity.ok(repository.findAllById_BranchId(branchId));
+    public ResponseEntity<List<BranchMedicineDTO>> getByBranchId(@PathVariable Long branchId){
+        return ResponseEntity.ok(service.getBranchMedicinesByBranchId(branchId));
     }
 
     @GetMapping("/medicine/{medicineId}")
-    public ResponseEntity<List<BranchMedicine>> getByMedicineId(@PathVariable Long medicineId){
-        return ResponseEntity.ok(repository.findAllById_MedicineId(medicineId));
+    public ResponseEntity<List<BranchMedicineDTO>> getByMedicineId(@PathVariable Long medicineId){
+        return ResponseEntity.ok(service.getBranchMedicinesByMedicineId(medicineId));
+    }
+
+    @GetMapping("/getAll")
+    public ResponseEntity<List<BranchMedicineDTO>> getAllBranchMedicines(){
+        return ResponseEntity.ok(service.getAllBranchMedicines());
     }
 }
 

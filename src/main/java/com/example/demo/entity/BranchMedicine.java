@@ -1,6 +1,9 @@
 package com.example.demo.entity;
 
 import com.example.demo.supportingEntities.BranchMedicineId;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -14,6 +17,7 @@ import java.time.LocalDateTime;
 })
 @Getter
 @Setter
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class BranchMedicine {
     
     @EmbeddedId
@@ -22,6 +26,7 @@ public class BranchMedicine {
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("branchId")
     @JoinColumn(name = "branch_id", nullable = false)
+    @JsonIgnore
     private PharmacyBranch branch;
 
     @ManyToOne(fetch = FetchType.LAZY)

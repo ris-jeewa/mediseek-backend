@@ -1,5 +1,6 @@
 package com.example.demo.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -8,18 +9,16 @@ import lombok.Setter;
 @Table(name = "Medicine")
 @Getter
 @Setter
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Medicine {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "name", nullable = false)
-    private String name;
-
-    @Column(name = "generic_name")
+    @Column(name = "generic_name", nullable = false)
     private String genericName;
 
-    @Column(name = "brand")
+    @Column(name = "brand", nullable = false)
     private String brand;
 
     @Column(name = "dosage_form", nullable = false)
@@ -37,10 +36,9 @@ public class Medicine {
     public Medicine() {
     }
 
-    public Medicine(Long id, String name, String genericName, String brand, String dosageForm,
+    public Medicine(Long id, String genericName, String brand, String dosageForm,
                    String strength, String category, String description) {
         this.id = id;
-        this.name = name;
         this.genericName = genericName;
         this.brand = brand;
         this.dosageForm = dosageForm;
