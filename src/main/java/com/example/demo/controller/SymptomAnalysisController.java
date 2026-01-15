@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.demo.dto.AnalzeWithDoctorsDTO;
 import com.example.demo.dto.SymptomAnalysisResponse;
 import com.example.demo.dto.SymptomRequest;
 import com.example.demo.service.GroqService;
@@ -21,9 +22,9 @@ public class SymptomAnalysisController {
     }
 
     @PostMapping("/analyze")
-    public ResponseEntity<SymptomAnalysisResponse> analyzeSymptoms(@RequestBody SymptomRequest request) {
+    public ResponseEntity<AnalzeWithDoctorsDTO> analyzeSymptoms(@RequestBody SymptomRequest request) {
         try {
-            SymptomAnalysisResponse analysis = groqService.analyzeSymptoms(request.getSymptoms());
+            AnalzeWithDoctorsDTO analysis = groqService.analyzeSymptoms(request.getSymptoms());
             return ResponseEntity.ok(analysis);
         } catch (Exception e) {
             e.printStackTrace();
