@@ -2,7 +2,12 @@ package com.example.demo.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.example.demo.dto.AnalzeWithDoctorsDTO;
 import com.example.demo.dto.SymptomAnalysisResponse;
+import com.example.demo.entity.Doctor;
+import com.example.demo.repository.DoctorRepository;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
@@ -12,6 +17,9 @@ import java.util.Map;
 
 @Service
 public class GroqService {
+
+    @Autowired
+    private DoctorRepository doctorRepository;
 
     @Value("${groq.api.key}")
     private String apiKey;
@@ -30,7 +38,7 @@ public class GroqService {
         this.objectMapper = objectMapper;
     }
 
-    public SymptomAnalysisResponse analyzeSymptoms(String symptoms) {
+    public AnalzeWithDoctorsDTO analyzeSymptoms(String symptoms) {
         String prompt = String.format(
                 """
                         You are a medical symptom analyzer assistant. Analyze the following symptoms and recommend the appropriate medical specialist.
@@ -39,7 +47,7 @@ public class GroqService {
 
                         Respond ONLY with a valid JSON object in this exact format (no markdown, no code blocks):
                         {
-                            "specialty": "one of: cardiologist, dermatologist, neurologist, gastroenterologist, orthopedic, general",
+                            "specialty": "one of: cardiology, dermatology, neurology, oncology, urology, general surgery, pediatrics, gastroenterology",
                             "urgency": "one of: high, medium, low",
                             "explanation": "A brief 1-2 sentence explanation of why this specialist is recommended",
                             "recommendations": ["recommendation 1", "recommendation 2", "recommendation 3"]
@@ -79,7 +87,7 @@ public class GroqService {
         }
     }
 
-    private SymptomAnalysisResponse parseGroqResponse(String response) {
+    private AnalzeWithDoctorsDTO parseGroqResponse(String response) {
         try {
             JsonNode root = objectMapper.readTree(response);
 
@@ -97,7 +105,14 @@ public class GroqService {
                     .trim();
 
             // Parse JSON to DTO
-            return objectMapper.readValue(text, SymptomAnalysisResponse.class);
+            SymptomAnalysisResponse analyzeResponse = objectMapper.readValue(text, SymptomAnalysisResponse.class);
+            
+            List<Doctor> doctors = doctorRepository.findBySpecialtyContainingIgnoreCase(analyzeResponse.getSpecialty());
+
+            AnalzeWithDoctorsDTO analyzeWithDoctorsDTO = new AnalzeWithDoctorsDTO();
+            analyzeWithDoctorsDTO.setDoctors(doctors);
+            analyzeWithDoctorsDTO.setSymptomAnalysisResponse(analyzeResponse);
+            return analyzeWithDoctorsDTO;
         } catch (Exception e) {
             throw new RuntimeException("Failed to parse Groq response: " + e.getMessage(), e);
         }
