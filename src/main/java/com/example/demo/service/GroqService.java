@@ -12,6 +12,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -41,23 +44,27 @@ public class GroqService {
     public AnalzeWithDoctorsDTO analyzeSymptoms(String symptoms) {
         String prompt = String.format(
                 """
-                        You are a medical symptom analyzer assistant. Analyze the following symptoms and recommend the appropriate medical specialist.
+                                    You are a medical symptom analyzer assistant. Analyze the following symptoms and recommend the appropriate medical specialist(s).
 
                         Symptoms: "%s"
 
                         Respond ONLY with a valid JSON object in this exact format (no markdown, no code blocks):
                         {
-                            "specialty": "one of: cardiology, dermatology, neurology, oncology, urology, general surgery, pediatrics, gastroenterology",
+                            "specialty": "comma-separated values from: cardiology, dermatology, neurology, oncology, urology, general surgery, pediatrics, gastroenterology",
                             "urgency": "one of: high, medium, low",
-                            "explanation": "A brief 1-2 sentence explanation of why this specialist is recommended",
+                            "explanation": "A brief 1-2 sentence explanation of why these specialist(s) are recommended",
                             "recommendations": ["recommendation 1", "recommendation 2", "recommendation 3"]
                         }
 
-                        Important: Return ONLY the JSON object, nothing else.
-                        """,
+                        Rules:
+                        - If more than one specialty is relevant, list them as a comma-separated string (e.g. "neurology, cardiology").
+                        - If only one specialty applies, return a single value without extra commas.
+                        - Return ONLY the JSON object, nothing else.
+
+                                    """,
                 symptoms);
 
-        // Build request body for Groq API (OpenAI-compatible format)
+        // Build request body for Groq API 
         Map<String, Object> requestBody = Map.of(
                 "model", model,
                 "messages", List.of(
@@ -91,7 +98,7 @@ public class GroqService {
         try {
             JsonNode root = objectMapper.readTree(response);
 
-            // Extract text from Groq response (OpenAI format)
+            // Extract text from Groq response
             String text = root
                     .path("choices")
                     .get(0)
@@ -99,15 +106,23 @@ public class GroqService {
                     .path("content")
                     .asText();
 
-            // Clean the response (remove any markdown code blocks if present)
+            // Clean the response 
             text = text.replaceAll("```json\\s*", "")
                     .replaceAll("```\\s*", "")
                     .trim();
 
             // Parse JSON to DTO
             SymptomAnalysisResponse analyzeResponse = objectMapper.readValue(text, SymptomAnalysisResponse.class);
-            
-            List<Doctor> doctors = doctorRepository.findBySpecialtyContainingIgnoreCase(analyzeResponse.getSpecialty());
+
+            List<String> specialties = Arrays.stream(analyzeResponse.getSpecialty().split(","))
+                    .map(String::trim)
+                    .toList();
+
+            List<Doctor> doctors = new ArrayList<>();
+            for (String specialty : specialties) {
+                List<Doctor> foundDoctors = doctorRepository.findBySpecialtyContainingIgnoreCase(specialty);
+                doctors.addAll(foundDoctors);
+            }
 
             AnalzeWithDoctorsDTO analyzeWithDoctorsDTO = new AnalzeWithDoctorsDTO();
             analyzeWithDoctorsDTO.setDoctors(doctors);
