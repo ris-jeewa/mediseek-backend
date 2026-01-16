@@ -21,6 +21,6 @@ public class HospitalController {
     public ResponseEntity<PaginatedHospitalResponse> getHospitals(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        return ResponseEntity.ok(hospitalService.getHospitals(page, size));
+        return ResponseEntity.ok(hospitalService.getAllHospoHospitals(page, size));
     }
 }
