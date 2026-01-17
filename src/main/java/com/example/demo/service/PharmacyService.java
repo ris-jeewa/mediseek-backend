@@ -1,11 +1,9 @@
 package com.example.demo.service;
 
-import com.example.demo.entity.BranchMedicine;
 import com.example.demo.entity.Pharmacy;
 import com.example.demo.entity.PharmacyBranch;
 import com.example.demo.exception.DuplicateResourceException;
 import com.example.demo.exception.IdNotFoundException;
-import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.repository.BranchMedicineRepository;
 import com.example.demo.repository.PharmacyBranchRepository;
 import com.example.demo.repository.PharmacyRepository;
