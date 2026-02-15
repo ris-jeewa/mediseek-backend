@@ -10,6 +10,8 @@ import org.springframework.transaction.annotation.Transactional;
 import com.example.demo.dto.HospitalCreateRequest;
 import com.example.demo.dto.PaginatedHospitalResponse;
 import com.example.demo.entity.Hospital;
+import com.example.demo.messaging.AppEvent;
+import com.example.demo.messaging.KafkaProducerService;
 import com.example.demo.repository.HospitalRepository;
 
 @Service
@@ -65,6 +67,9 @@ public class HospitalService {
     @Autowired
     private HospitalRepository hospitalRepository;
 
+    @Autowired(required = false)
+    private KafkaProducerService kafkaProducer;
+
     public PaginatedHospitalResponse getAllHospoHospitals(int page, int size){
                 // Validate pagination parameters
         if (page < 0) {
@@ -99,7 +104,11 @@ public class HospitalService {
 
     @Transactional
     public Hospital createHospital(HospitalCreateRequest request) {
-        return hospitalRepository.save(toEntity(request));
+        Hospital saved = hospitalRepository.save(toEntity(request));
+        if (kafkaProducer != null) {
+            kafkaProducer.publishAppEvent(AppEvent.of(saved.getId().toString(), "HOSPITAL_CREATED", saved));
+        }
+        return saved;
     }
 
     @Transactional
@@ -107,7 +116,13 @@ public class HospitalService {
         List<Hospital> hospitals = requests.stream()
                 .map(this::toEntity)
                 .collect(Collectors.toList());
-        return hospitalRepository.saveAll(hospitals);
+        List<Hospital> saved = hospitalRepository.saveAll(hospitals);
+        if (kafkaProducer != null) {
+            for (Hospital h : saved) {
+                kafkaProducer.publishAppEvent(AppEvent.of(h.getId().toString(), "HOSPITAL_CREATED", h));
+            }
+        }
+        return saved;
     }
 
     private Hospital toEntity(HospitalCreateRequest req) {

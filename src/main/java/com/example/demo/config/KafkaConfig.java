@@ -12,9 +12,19 @@ public class KafkaConfig {
 
     public static final String TOPIC_APP_EVENTS = "app.events";
 
+    public static final String TOPIC_HOSPITAL_EVENTS = "hospital.events";
+
     @Bean
     public NewTopic appEventsTopic() {
         return TopicBuilder.name(TOPIC_APP_EVENTS)
+                .partitions(3)
+                .replicas(1)
+                .build();
+    }
+
+    @Bean
+    public NewTopic hospitalEventsTopic() {
+        return TopicBuilder.name(TOPIC_HOSPITAL_EVENTS)
                 .partitions(3)
                 .replicas(1)
                 .build();

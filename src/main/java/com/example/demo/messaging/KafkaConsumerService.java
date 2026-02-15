@@ -17,7 +17,7 @@ public class KafkaConsumerService {
 
     @KafkaListener(topics = KafkaConfig.TOPIC_APP_EVENTS, groupId = "mediseek-app-group")
     public void consumeAppEvent(String message) {
-        log.info("Received app event: {}", message);
+        log.info("Kafka Received app event: {}", message);
         // Add your processing logic here
     }
 }
