@@ -1,4 +1,4 @@
-# Kafka & Grafana Setup Guide
+# Kafka, Grafana & Loki Setup Guide
 
 ## Quick Start
 
@@ -8,7 +8,7 @@
 docker-compose up -d
 ```
 
-This starts: Kafka (9092), Zookeeper (2181), Prometheus (9090), Grafana (3001), Kafka Exporter (9308).
+This starts: Kafka (9092), Zookeeper (2181), Prometheus (9090), Grafana (3001), Loki (3100), Promtail, Kafka Exporter (9308).
 
 ### 2. Run the application
 
@@ -22,11 +22,9 @@ For local dev, if port 80 requires admin rights, set `PORT=8080` or add `server.
 
 1. Open http://localhost:3001
 2. Login: **admin** / **admin**
-3. Add Prometheus data source:
-   - Configuration → Data Sources → Add data source
-   - Choose **Prometheus**
-   - URL: `http://prometheus:9090` (from inside Docker) or `http://host.docker.internal:9090` if Grafana runs outside Docker
-   - Save & Test
+3. Add data sources:
+   - **Prometheus**: Configuration → Data Sources → Add → Prometheus → URL: `http://prometheus:9090` → Save & Test
+   - **Loki**: Add → Loki → URL: `http://loki:3100` → Save & Test
 
 4. Import dashboards:
    - Spring Boot 2.1 Statistics: ID **10280**
@@ -71,6 +69,12 @@ public class HospitalService {
 | Grafana       | 3001 | http://localhost:3001  |
 | Kafka Exporter| 9308 | localhost:9308         |
 | App Actuator  | /actuator/prometheus | http://localhost:8080/actuator/prometheus |
+| Loki          | 3100 | http://localhost:3100 |
+
+### View logs in Grafana (Loki)
+
+1. Add Loki as a data source (see step 3 above).
+2. Explore → select Loki → query: `{job="mediseek-app"}` to see logs from `logs/mediseek-app.log`.
 
 ---
 

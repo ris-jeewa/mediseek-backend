@@ -32,22 +32,40 @@ services:
     ports:
       - "9308:9308"
 
-  prometheus:
-    image: prom/prometheus:latest
+  # prometheus:
+  #   image: prom/prometheus:latest
+  #   ports:
+  #     - "9090:9090"
+  #   volumes:
+  #     - ./prometheus.yml:/etc/prometheus/prometheus.yml
+  #   command:
+  #     - '--config.file=/etc/prometheus/prometheus.yml'
+  #     - '--web.enable-lifecycle'
+  #   extra_hosts:
+  #     - "host.docker.internal:host-gateway"
+
+  loki:
+    image: grafana/loki:2.9.2
     ports:
-      - "9090:9090"
+      - "3100:3100"
     volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml
-    command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-      - '--web.enable-lifecycle'
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+      - ./loki-config.yml:/etc/loki/local-config.yaml
+    command: -config.file=/etc/loki/local-config.yaml
+
+  promtail:
+    image: grafana/promtail:2.9.2
+    depends_on:
+      - loki
+    volumes:
+      - ./promtail-config.yml:/etc/promtail/config.yml
+      - ./logs:/var/log/app:ro
+    command: -config.file=/etc/promtail/config.yml
 
   grafana:
     image: grafana/grafana:latest
     depends_on:
       - prometheus
+      - loki
     ports:
       - "3001:3000"
     environment:
