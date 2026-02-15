@@ -106,7 +106,7 @@ public class HospitalService {
     public Hospital createHospital(HospitalCreateRequest request) {
         Hospital saved = hospitalRepository.save(toEntity(request));
         if (kafkaProducer != null) {
-            kafkaProducer.publishAppEvent(AppEvent.of(saved.getId().toString(), "HOSPITAL_CREATED", saved));
+            kafkaProducer.publishHospitalEvent(AppEvent.of(saved.getId().toString(), "HOSPITAL_CREATED", saved));
         }
         return saved;
     }

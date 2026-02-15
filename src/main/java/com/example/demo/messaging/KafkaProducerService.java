@@ -32,6 +32,10 @@ public class KafkaProducerService {
         return publishJson(KafkaConfig.TOPIC_APP_EVENTS, event.entityId(), event);
     }
 
+    public CompletableFuture<SendResult<String, String>> publishHospitalEvent(AppEvent event) {
+        return publishJson(KafkaConfig.TOPIC_HOSPITAL_EVENTS, event.entityId(), event);
+    }
+
     /**
      * Publish a JSON message to a topic with optional key.
      */

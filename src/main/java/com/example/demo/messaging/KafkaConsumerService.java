@@ -20,4 +20,10 @@ public class KafkaConsumerService {
         log.info("Kafka Received app event: {}", message);
         // Add your processing logic here
     }
+
+    @KafkaListener(topics = KafkaConfig.TOPIC_HOSPITAL_EVENTS, groupId = "mediseek-hospital-group")
+    public void consumeHospitalEvent(String message) {
+        log.info("Kafka Received hospital event: {}", message);
+        // Add your processing logic here
+    }
 }
