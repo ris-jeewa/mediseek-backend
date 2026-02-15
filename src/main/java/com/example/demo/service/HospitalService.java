@@ -1,15 +1,15 @@
 package com.example.demo.service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import com.example.demo.dto.HospitalApiDTO;
-import com.example.demo.dto.HospitalDTO;
+import com.example.demo.dto.HospitalCreateRequest;
 import com.example.demo.dto.PaginatedHospitalResponse;
 import com.example.demo.entity.Hospital;
-import com.example.demo.repository.HospitalApiRepository;
 import com.example.demo.repository.HospitalRepository;
 
 @Service
@@ -95,5 +95,29 @@ public class HospitalService {
         return new PaginatedHospitalResponse(
                 pagedData, page, size, totalElements, totalPages
         );
+    }
+
+    @Transactional
+    public Hospital createHospital(HospitalCreateRequest request) {
+        return hospitalRepository.save(toEntity(request));
+    }
+
+    @Transactional
+    public List<Hospital> createHospitals(List<HospitalCreateRequest> requests) {
+        List<Hospital> hospitals = requests.stream()
+                .map(this::toEntity)
+                .collect(Collectors.toList());
+        return hospitalRepository.saveAll(hospitals);
+    }
+
+    private Hospital toEntity(HospitalCreateRequest req) {
+        Hospital h = new Hospital();
+        h.setName(req.getName());
+        h.setType(req.getType());
+        h.setRating(req.getRating());
+        h.setOpenHours(req.getOpenHours());
+        h.setMap(req.getMap());
+        h.setTelephone(req.getTelephone());
+        return h;
     }
 }
