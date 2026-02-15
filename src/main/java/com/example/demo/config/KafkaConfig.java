@@ -11,8 +11,9 @@ import org.springframework.kafka.config.TopicBuilder;
 public class KafkaConfig {
 
     public static final String TOPIC_APP_EVENTS = "app.events";
-
     public static final String TOPIC_HOSPITAL_EVENTS = "hospital.events";
+    public static final String TOPIC_PHARMACY_EVENTS = "pharmacy.events";
+    public static final String TOPIC_MEDICINE_EVENTS = "medicine.events";
 
     @Bean
     public NewTopic appEventsTopic() {
@@ -25,6 +26,22 @@ public class KafkaConfig {
     @Bean
     public NewTopic hospitalEventsTopic() {
         return TopicBuilder.name(TOPIC_HOSPITAL_EVENTS)
+                .partitions(3)
+                .replicas(1)
+                .build();
+    }
+
+    @Bean
+    public NewTopic pharmacyEventsTopic() {
+        return TopicBuilder.name(TOPIC_PHARMACY_EVENTS)
+                .partitions(3)
+                .replicas(1)
+                .build();
+    }
+
+    @Bean
+    public NewTopic medicineEventsTopic() {
+        return TopicBuilder.name(TOPIC_MEDICINE_EVENTS)
                 .partitions(3)
                 .replicas(1)
                 .build();

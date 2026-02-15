@@ -26,4 +26,16 @@ public class KafkaConsumerService {
         log.info("Kafka Received hospital event: {}", message);
         // Add your processing logic here
     }
+
+    @KafkaListener(topics = KafkaConfig.TOPIC_PHARMACY_EVENTS, groupId = "mediseek-pharmacy-group")
+    public void consumePharmacyEvent(String message) {
+        log.info("Kafka Received pharmacy event: {}", message);
+        // Add your processing logic here
+    }
+
+    @KafkaListener(topics = KafkaConfig.TOPIC_MEDICINE_EVENTS, groupId = "mediseek-medicine-group")
+    public void consumeMedicineEvent(String message) {
+        log.info("Kafka Received medicine event: {}", message);
+        // Add your processing logic here
+    }
 }

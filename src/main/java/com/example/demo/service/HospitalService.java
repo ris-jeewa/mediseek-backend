@@ -119,7 +119,7 @@ public class HospitalService {
         List<Hospital> saved = hospitalRepository.saveAll(hospitals);
         if (kafkaProducer != null) {
             for (Hospital h : saved) {
-                kafkaProducer.publishAppEvent(AppEvent.of(h.getId().toString(), "HOSPITAL_CREATED", h));
+                kafkaProducer.publishHospitalEvent(AppEvent.of(h.getId().toString(), "HOSPITAL_CREATED", h));
             }
         }
         return saved;

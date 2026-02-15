@@ -2,6 +2,8 @@ package com.example.demo.service;
 
 import com.example.demo.entity.Medicine;
 import com.example.demo.exception.IdNotFoundException;
+import com.example.demo.messaging.AppEvent;
+import com.example.demo.messaging.KafkaProducerService;
 import com.example.demo.repository.MedicineRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -14,12 +16,25 @@ public class MedicineService {
     @Autowired
     public MedicineRepository mediRepository;
 
+    @Autowired(required = false)
+    private KafkaProducerService kafkaProducer;
+
     public Medicine createMedicine(Medicine medicine){
-        return mediRepository.save(medicine);
+        Medicine saved = mediRepository.save(medicine);
+        if (kafkaProducer != null) {
+            kafkaProducer.publishMedicineEvent(AppEvent.of(saved.getId().toString(), "MEDICINE_CREATED", saved));
+        }
+        return saved;
     }
 
     public List<Medicine> createMedicines(List<Medicine> medicines) {
-        return mediRepository.saveAll(medicines);
+        List<Medicine> saved = mediRepository.saveAll(medicines);
+        if (kafkaProducer != null) {
+            for (Medicine m : saved) {
+                kafkaProducer.publishMedicineEvent(AppEvent.of(m.getId().toString(), "MEDICINE_CREATED", m));
+            }
+        }
+        return saved;
     }
 
     public List<Medicine> getMedicineList(){

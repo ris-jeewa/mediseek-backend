@@ -4,6 +4,8 @@ import com.example.demo.entity.Pharmacy;
 import com.example.demo.entity.PharmacyBranch;
 import com.example.demo.exception.DuplicateResourceException;
 import com.example.demo.exception.IdNotFoundException;
+import com.example.demo.messaging.AppEvent;
+import com.example.demo.messaging.KafkaProducerService;
 import com.example.demo.repository.BranchMedicineRepository;
 import com.example.demo.repository.PharmacyBranchRepository;
 import com.example.demo.repository.PharmacyRepository;
@@ -31,6 +33,9 @@ public class PharmacyService {
     @Autowired
     private BranchMedicineService branchMedicineService;
 
+    @Autowired(required = false)
+    private KafkaProducerService kafkaProducer;
+
     private void validateRegistrationNumber(String regNumber) {
         if (regNumber != null && !regNumber.trim().isEmpty() &&
                 repository.existsByRegistrationNumber(regNumber.trim())) {
@@ -45,7 +50,11 @@ public class PharmacyService {
                 !pharmacy.getRegistrationNumber().trim().isEmpty()) {
             validateRegistrationNumber(pharmacy.getRegistrationNumber());
         }
-        return repository.save(pharmacy);
+        Pharmacy saved = repository.save(pharmacy);
+        if (kafkaProducer != null) {
+            kafkaProducer.publishPharmacyEvent(AppEvent.of(saved.getId().toString(), "PHARMACY_CREATED", saved));
+        }
+        return saved;
     }
 
     public List<Pharmacy> createPharmacies(List<Pharmacy> pharmacies) {
@@ -72,7 +81,13 @@ public class PharmacyService {
             // Check for duplicates in the database
             validateRegistrationNumber(trimmedRegNumber);
         }
-        return repository.saveAll(pharmacies);
+        List<Pharmacy> saved = repository.saveAll(pharmacies);
+        if (kafkaProducer != null) {
+            for (Pharmacy p : saved) {
+                kafkaProducer.publishPharmacyEvent(AppEvent.of(p.getId().toString(), "PHARMACY_CREATED", p));
+            }
+        }
+        return saved;
     }
 
     public List<Pharmacy> getPharmacies() {
