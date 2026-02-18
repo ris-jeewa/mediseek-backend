@@ -13,7 +13,8 @@ public class CorsConfig {
     @Bean
     public CorsFilter corsFilter() {
         CorsConfiguration corsConfig = new CorsConfiguration();
-        corsConfig.addAllowedOrigin("http://localhost:3000"); // Allow requests from this origin
+        corsConfig.addAllowedOrigin("http://localhost:3000");
+        corsConfig.addAllowedOrigin("https://mediseek-pi.vercel.app");
         corsConfig.addAllowedHeader("*"); // Allow all headers
         corsConfig.addAllowedMethod("*"); // Allow all HTTP methods
 
