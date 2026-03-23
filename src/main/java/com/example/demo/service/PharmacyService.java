@@ -6,10 +6,13 @@ import com.example.demo.exception.DuplicateResourceException;
 import com.example.demo.exception.IdNotFoundException;
 import com.example.demo.messaging.AppEvent;
 import com.example.demo.messaging.KafkaProducerService;
-import com.example.demo.repository.BranchMedicineRepository;
 import com.example.demo.repository.PharmacyBranchRepository;
 import com.example.demo.repository.PharmacyRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,9 +26,6 @@ import java.util.stream.Collectors;
 public class PharmacyService {
     @Autowired
     private PharmacyRepository repository;
-
-    @Autowired
-    private BranchMedicineRepository branchMedicineRepository;
 
     @Autowired
     private PharmacyBranchRepository pharmacyBranchRepository;
@@ -44,6 +44,11 @@ public class PharmacyService {
         }
     }
 
+    @Caching(evict = {
+            @CacheEvict(value = "pharmacies", key = "'all'"),
+            @CacheEvict(value = "pharmaciesByMedicine", allEntries = true)
+    })
+    @CachePut(value = "pharmacy", key = "#result.id")
     public Pharmacy createPharmacy(Pharmacy pharmacy) {
         // Check for duplicate registration number
         if (pharmacy.getRegistrationNumber() != null &&
@@ -57,6 +62,10 @@ public class PharmacyService {
         return saved;
     }
 
+    @Caching(evict = {
+            @CacheEvict(value = "pharmacies", key = "'all'"),
+            @CacheEvict(value = "pharmaciesByMedicine", allEntries = true)
+    })
     public List<Pharmacy> createPharmacies(List<Pharmacy> pharmacies) {
         // Check for duplicates within the list itself
         Set<String> registrationNumbersInBatch = new HashSet<>();
@@ -90,15 +99,22 @@ public class PharmacyService {
         return saved;
     }
 
+    @Cacheable(value = "pharmacies", key = "'all'")
     public List<Pharmacy> getPharmacies() {
         return repository.findAll();
     }
 
+    @Cacheable(value = "pharmacy", key = "#id")
     public Pharmacy getPharmacyById(Long id) {
         return repository.findById(id)
                 .orElseThrow(() -> new IdNotFoundException("Pharmacy with id " + id + " not found"));
     }
 
+    @Caching(evict = {
+            @CacheEvict(value = "pharmacies", key = "'all'"),
+            @CacheEvict(value = "pharmaciesByMedicine", allEntries = true),
+            @CacheEvict(value = "pharmacy", key = "#pharmacy.id")
+    })
     public Pharmacy updatePharmacy(Pharmacy pharmacy) {
         Optional<Pharmacy> foundPharmacy = repository.findById(pharmacy.getId());
 
@@ -126,6 +142,7 @@ public class PharmacyService {
     }
 
     @Transactional(readOnly = true)
+    @Cacheable(value = "pharmaciesByMedicine", key = "#medicineId")
     public List<Pharmacy> getPharmaciesByMedicineId(Long medicineId) {
         // Get all BranchMedicine records for the given medicineId
         // List<BranchMedicine> branchMedicines = branchMedicineRepository.findAllById_MedicineId(medicineId);
