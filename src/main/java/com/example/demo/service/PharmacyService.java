@@ -5,7 +5,7 @@ import com.example.demo.entity.PharmacyBranch;
 import com.example.demo.exception.DuplicateResourceException;
 import com.example.demo.exception.IdNotFoundException;
 import com.example.demo.messaging.AppEvent;
-import com.example.demo.messaging.KafkaProducerService;
+import com.example.demo.messaging.DomainEventPublisher;
 import com.example.demo.repository.PharmacyBranchRepository;
 import com.example.demo.repository.PharmacyRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,8 +33,8 @@ public class PharmacyService {
     @Autowired
     private BranchMedicineService branchMedicineService;
 
-    @Autowired(required = false)
-    private KafkaProducerService kafkaProducer;
+    @Autowired
+    private DomainEventPublisher domainEventPublisher;
 
     private void validateRegistrationNumber(String regNumber) {
         if (regNumber != null && !regNumber.trim().isEmpty() &&
@@ -56,9 +56,7 @@ public class PharmacyService {
             validateRegistrationNumber(pharmacy.getRegistrationNumber());
         }
         Pharmacy saved = repository.save(pharmacy);
-        if (kafkaProducer != null) {
-            kafkaProducer.publishPharmacyEvent(AppEvent.of(saved.getId().toString(), "PHARMACY_CREATED", saved));
-        }
+        domainEventPublisher.publishPharmacyEvent(AppEvent.of(saved.getId().toString(), "PHARMACY_CREATED", saved));
         return saved;
     }
 
@@ -91,10 +89,8 @@ public class PharmacyService {
             validateRegistrationNumber(trimmedRegNumber);
         }
         List<Pharmacy> saved = repository.saveAll(pharmacies);
-        if (kafkaProducer != null) {
-            for (Pharmacy p : saved) {
-                kafkaProducer.publishPharmacyEvent(AppEvent.of(p.getId().toString(), "PHARMACY_CREATED", p));
-            }
+        for (Pharmacy p : saved) {
+            domainEventPublisher.publishPharmacyEvent(AppEvent.of(p.getId().toString(), "PHARMACY_CREATED", p));
         }
         return saved;
     }
@@ -135,7 +131,9 @@ public class PharmacyService {
             updatedPharmacy.setContactNumber(pharmacy.getContactNumber());
             updatedPharmacy.setIsActive(pharmacy.getIsActive());
 
-            return repository.save(updatedPharmacy);
+            Pharmacy saved = repository.save(updatedPharmacy);
+            domainEventPublisher.publishPharmacyEvent(AppEvent.of(saved.getId().toString(), "PHARMACY_UPDATED", saved));
+            return saved;
         } else {
             throw new IdNotFoundException("Invalid pharmacy Id");
         }
