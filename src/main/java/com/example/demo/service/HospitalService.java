@@ -11,7 +11,7 @@ import com.example.demo.dto.HospitalCreateRequest;
 import com.example.demo.dto.PaginatedHospitalResponse;
 import com.example.demo.entity.Hospital;
 import com.example.demo.messaging.AppEvent;
-import com.example.demo.messaging.KafkaProducerService;
+import com.example.demo.messaging.DomainEventPublisher;
 import com.example.demo.repository.HospitalRepository;
 
 @Service
@@ -67,8 +67,8 @@ public class HospitalService {
     @Autowired
     private HospitalRepository hospitalRepository;
 
-    @Autowired(required = false)
-    private KafkaProducerService kafkaProducer;
+    @Autowired
+    private DomainEventPublisher domainEventPublisher;
 
     public PaginatedHospitalResponse getAllHospoHospitals(int page, int size){
                 // Validate pagination parameters
@@ -105,9 +105,7 @@ public class HospitalService {
     @Transactional
     public Hospital createHospital(HospitalCreateRequest request) {
         Hospital saved = hospitalRepository.save(toEntity(request));
-        if (kafkaProducer != null) {
-            kafkaProducer.publishHospitalEvent(AppEvent.of(saved.getId().toString(), "HOSPITAL_CREATED", saved));
-        }
+        domainEventPublisher.publishHospitalEvent(AppEvent.of(saved.getId().toString(), "HOSPITAL_CREATED", saved));
         return saved;
     }
 
@@ -117,10 +115,8 @@ public class HospitalService {
                 .map(this::toEntity)
                 .collect(Collectors.toList());
         List<Hospital> saved = hospitalRepository.saveAll(hospitals);
-        if (kafkaProducer != null) {
-            for (Hospital h : saved) {
-                kafkaProducer.publishHospitalEvent(AppEvent.of(h.getId().toString(), "HOSPITAL_CREATED", h));
-            }
+        for (Hospital h : saved) {
+            domainEventPublisher.publishHospitalEvent(AppEvent.of(h.getId().toString(), "HOSPITAL_CREATED", h));
         }
         return saved;
     }
