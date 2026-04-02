@@ -99,7 +99,3 @@ mvn clean package azure-webapp:deploy
 ```
 
 Ensure the Azure Web App has the correct environment variables (database URL, Groq API key, Kafka bootstrap servers if used).
-
-## License
-
-Proprietary / as per your project policy.
