@@ -347,6 +347,7 @@ The POM includes **`azure-webapp-maven-plugin`** with example settings (resource
 mvn clean package azure-webapp:deploy
 ```
 
+
 Set application settings in Azure for: database URL/credentials, **Groq API key**, Redis, Kafka bootstrap servers (if used), and `PORT` / JVM options as required.
 
 ---
@@ -387,3 +388,6 @@ logs/                         # Created at runtime when file logging enabled
 ## License / ownership
 
 Project metadata in `pom.xml` (`groupId` **com.example**, `artifactId` **demo**). Update coordinates and description when publishing formally.
+
+Ensure the Azure Web App has the correct environment variables (database URL, Groq API key, Kafka bootstrap servers if used).
+
