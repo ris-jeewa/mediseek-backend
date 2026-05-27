@@ -4,6 +4,8 @@ import com.example.demo.dto.BranchDTO;
 import com.example.demo.dto.PharmacyBranchDTO;
 import com.example.demo.entity.PharmacyBranch;
 import com.example.demo.exception.IdNotFoundException;
+import com.example.demo.messaging.AppEvent;
+import com.example.demo.messaging.DomainEventPublisher;
 import com.example.demo.repository.PharmacyBranchRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -17,12 +19,23 @@ public class PharmacyBranchService {
     @Autowired
     private PharmacyBranchRepository repository;
 
-    public PharmacyBranch createBranch(PharmacyBranch branch){
-        return repository.save(branch);
+    @Autowired
+    private DomainEventPublisher domainEventPublisher;
+
+    public PharmacyBranch createBranch(PharmacyBranch branch) {
+        PharmacyBranch saved = repository.save(branch);
+        domainEventPublisher.publishPharmacyEvent(
+                AppEvent.of(saved.getId().toString(), "PHARMACY_BRANCH_CREATED", saved));
+        return saved;
     }
 
-    public List<PharmacyBranch> createBranches(List<PharmacyBranch> branches){
-        return repository.saveAll(branches);
+    public List<PharmacyBranch> createBranches(List<PharmacyBranch> branches) {
+        List<PharmacyBranch> saved = repository.saveAll(branches);
+        for (PharmacyBranch b : saved) {
+            domainEventPublisher.publishPharmacyEvent(
+                    AppEvent.of(b.getId().toString(), "PHARMACY_BRANCH_CREATED", b));
+        }
+        return saved;
     }
 
     public List<PharmacyBranchDTO> getAllBranches(){
@@ -67,7 +80,10 @@ public class PharmacyBranchService {
             updatedBranch.setOpeningHours(branch.getOpeningHours());
             updatedBranch.setIsActive(branch.getIsActive());
 
-            return repository.save(updatedBranch);
+            PharmacyBranch saved = repository.save(updatedBranch);
+            domainEventPublisher.publishPharmacyEvent(
+                    AppEvent.of(saved.getId().toString(), "PHARMACY_BRANCH_UPDATED", saved));
+            return saved;
         }else {
             throw new IdNotFoundException("Invalid branch Id");
         }

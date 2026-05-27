@@ -5,6 +5,8 @@ import com.example.demo.dto.BranchMedicineRequestDTO;
 import com.example.demo.entity.BranchMedicine;
 import com.example.demo.exception.DuplicateResourceException;
 import com.example.demo.exception.ResourceNotFoundException;
+import com.example.demo.messaging.AppEvent;
+import com.example.demo.messaging.DomainEventPublisher;
 import com.example.demo.repository.BranchMedicineRepository;
 import com.example.demo.repository.MedicineRepository;
 import com.example.demo.repository.PharmacyBranchRepository;
@@ -26,6 +28,9 @@ public class BranchMedicineService {
 
     @Autowired
     private MedicineRepository medicineRepository;
+
+    @Autowired
+    private DomainEventPublisher domainEventPublisher;
 
     public List<Long> getBranchIdsByMedicineId(Long medicineId){
         List<BranchMedicine> list = repository.findAllById_MedicineId(medicineId);
@@ -105,7 +110,12 @@ public class BranchMedicineService {
         bm.setPrice(request.getPrice());
         bm.setStockQuantity(request.getStockQuantity());
     
-        return repository.save(bm);
+        BranchMedicine saved = repository.save(bm);
+        domainEventPublisher.publishPharmacyEvent(AppEvent.of(
+                saved.getId().getBranchId() + ":" + saved.getId().getMedicineId(),
+                "BRANCH_MEDICINE_CREATED",
+                saved));
+        return saved;
     }
 
     public BranchMedicine updateBranchMedicine(BranchMedicineId id, BranchMedicine branchMedicine){
@@ -125,7 +135,12 @@ public class BranchMedicineService {
             
             // lastUpdated is automatically set by @PreUpdate
             
-            return repository.save(existing);
+            BranchMedicine saved = repository.save(existing);
+            domainEventPublisher.publishPharmacyEvent(AppEvent.of(
+                    saved.getId().getBranchId() + ":" + saved.getId().getMedicineId(),
+                    "BRANCH_MEDICINE_UPDATED",
+                    saved));
+            return saved;
         } else {
             throw new ResourceNotFoundException("BranchMedicine with branchId " + id.getBranchId() + " and medicineId " + id.getMedicineId() + " not found");
         }
@@ -135,6 +150,10 @@ public class BranchMedicineService {
         BranchMedicineId id = new BranchMedicineId(branchId, medicineId);
         if (repository.existsById(id)) {
             repository.deleteById(id);
+            domainEventPublisher.publishPharmacyEvent(AppEvent.of(
+                    branchId + ":" + medicineId,
+                    "BRANCH_MEDICINE_DELETED",
+                    null));
             return "BranchMedicine with branchId " + branchId + " and medicineId " + medicineId + " deleted successfully";
         } else {
             throw new ResourceNotFoundException("BranchMedicine with branchId " + branchId + " and medicineId " + medicineId + " not found");

@@ -1,3 +1,4 @@
+spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
 spring.datasource.url=${DATABASE_URL}
 spring.datasource.username=${DATABASE_USERNAME}
 spring.datasource.password=${DATABASE_PASSWORD}
@@ -8,3 +9,22 @@ spring.jpa.show-sql=true
 groq.api.key=${GROQ_API_KEY}
 groq.api.url=https://api.groq.com/openai/v1/chat/completions
 groq.model=llama-3.3-70b-versatile
+
+server.port=${PORT:80}
+
+spring.kafka.bootstrap-servers=localhost:9092
+spring.kafka.consumer.group-id=mediseek-app-group
+spring.kafka.consumer.auto-offset-reset=earliest
+spring.kafka.admin.auto-create=true
+
+# Actuator + Prometheus for Grafana
+management.endpoints.web.exposure.include=health,info,prometheus,metrics
+management.endpoint.prometheus.enabled=true
+
+# Log to file in project logs directory
+logging.file.name=logs/mediseek-app.log
+
+# Redis
+spring.data.redis.host=localhost
+spring.data.redis.port=6379
+spring.data.redis.time-to-live=3600000

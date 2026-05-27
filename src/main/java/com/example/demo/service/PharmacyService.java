@@ -5,11 +5,14 @@ import com.example.demo.entity.PharmacyBranch;
 import com.example.demo.exception.DuplicateResourceException;
 import com.example.demo.exception.IdNotFoundException;
 import com.example.demo.messaging.AppEvent;
-import com.example.demo.messaging.KafkaProducerService;
-import com.example.demo.repository.BranchMedicineRepository;
+import com.example.demo.messaging.DomainEventPublisher;
 import com.example.demo.repository.PharmacyBranchRepository;
 import com.example.demo.repository.PharmacyRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,16 +28,13 @@ public class PharmacyService {
     private PharmacyRepository repository;
 
     @Autowired
-    private BranchMedicineRepository branchMedicineRepository;
-
-    @Autowired
     private PharmacyBranchRepository pharmacyBranchRepository;
 
     @Autowired
     private BranchMedicineService branchMedicineService;
 
-    @Autowired(required = false)
-    private KafkaProducerService kafkaProducer;
+    @Autowired
+    private DomainEventPublisher domainEventPublisher;
 
     private void validateRegistrationNumber(String regNumber) {
         if (regNumber != null && !regNumber.trim().isEmpty() &&
@@ -44,6 +44,11 @@ public class PharmacyService {
         }
     }
 
+    @Caching(evict = {
+            @CacheEvict(value = "pharmacies", key = "'all'"),
+            @CacheEvict(value = "pharmaciesByMedicine", allEntries = true)
+    })
+    @CachePut(value = "pharmacy", key = "#result.id")
     public Pharmacy createPharmacy(Pharmacy pharmacy) {
         // Check for duplicate registration number
         if (pharmacy.getRegistrationNumber() != null &&
@@ -51,12 +56,14 @@ public class PharmacyService {
             validateRegistrationNumber(pharmacy.getRegistrationNumber());
         }
         Pharmacy saved = repository.save(pharmacy);
-        if (kafkaProducer != null) {
-            kafkaProducer.publishPharmacyEvent(AppEvent.of(saved.getId().toString(), "PHARMACY_CREATED", saved));
-        }
+        domainEventPublisher.publishPharmacyEvent(AppEvent.of(saved.getId().toString(), "PHARMACY_CREATED", saved));
         return saved;
     }
 
+    @Caching(evict = {
+            @CacheEvict(value = "pharmacies", key = "'all'"),
+            @CacheEvict(value = "pharmaciesByMedicine", allEntries = true)
+    })
     public List<Pharmacy> createPharmacies(List<Pharmacy> pharmacies) {
         // Check for duplicates within the list itself
         Set<String> registrationNumbersInBatch = new HashSet<>();
@@ -82,23 +89,28 @@ public class PharmacyService {
             validateRegistrationNumber(trimmedRegNumber);
         }
         List<Pharmacy> saved = repository.saveAll(pharmacies);
-        if (kafkaProducer != null) {
-            for (Pharmacy p : saved) {
-                kafkaProducer.publishPharmacyEvent(AppEvent.of(p.getId().toString(), "PHARMACY_CREATED", p));
-            }
+        for (Pharmacy p : saved) {
+            domainEventPublisher.publishPharmacyEvent(AppEvent.of(p.getId().toString(), "PHARMACY_CREATED", p));
         }
         return saved;
     }
 
+    @Cacheable(value = "pharmacies", key = "'all'")
     public List<Pharmacy> getPharmacies() {
         return repository.findAll();
     }
 
+    @Cacheable(value = "pharmacy", key = "#id")
     public Pharmacy getPharmacyById(Long id) {
         return repository.findById(id)
                 .orElseThrow(() -> new IdNotFoundException("Pharmacy with id " + id + " not found"));
     }
 
+    @Caching(evict = {
+            @CacheEvict(value = "pharmacies", key = "'all'"),
+            @CacheEvict(value = "pharmaciesByMedicine", allEntries = true),
+            @CacheEvict(value = "pharmacy", key = "#pharmacy.id")
+    })
     public Pharmacy updatePharmacy(Pharmacy pharmacy) {
         Optional<Pharmacy> foundPharmacy = repository.findById(pharmacy.getId());
 
@@ -119,13 +131,16 @@ public class PharmacyService {
             updatedPharmacy.setContactNumber(pharmacy.getContactNumber());
             updatedPharmacy.setIsActive(pharmacy.getIsActive());
 
-            return repository.save(updatedPharmacy);
+            Pharmacy saved = repository.save(updatedPharmacy);
+            domainEventPublisher.publishPharmacyEvent(AppEvent.of(saved.getId().toString(), "PHARMACY_UPDATED", saved));
+            return saved;
         } else {
             throw new IdNotFoundException("Invalid pharmacy Id");
         }
     }
 
     @Transactional(readOnly = true)
+    @Cacheable(value = "pharmaciesByMedicine", key = "#medicineId")
     public List<Pharmacy> getPharmaciesByMedicineId(Long medicineId) {
         // Get all BranchMedicine records for the given medicineId
         // List<BranchMedicine> branchMedicines = branchMedicineRepository.findAllById_MedicineId(medicineId);

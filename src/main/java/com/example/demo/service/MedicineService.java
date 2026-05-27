@@ -3,7 +3,7 @@ package com.example.demo.service;
 import com.example.demo.entity.Medicine;
 import com.example.demo.exception.IdNotFoundException;
 import com.example.demo.messaging.AppEvent;
-import com.example.demo.messaging.KafkaProducerService;
+import com.example.demo.messaging.DomainEventPublisher;
 import com.example.demo.repository.MedicineRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -16,23 +16,19 @@ public class MedicineService {
     @Autowired
     public MedicineRepository mediRepository;
 
-    @Autowired(required = false)
-    private KafkaProducerService kafkaProducer;
+    @Autowired
+    private DomainEventPublisher domainEventPublisher;
 
     public Medicine createMedicine(Medicine medicine){
         Medicine saved = mediRepository.save(medicine);
-        if (kafkaProducer != null) {
-            kafkaProducer.publishMedicineEvent(AppEvent.of(saved.getId().toString(), "MEDICINE_CREATED", saved));
-        }
+        domainEventPublisher.publishMedicineEvent(AppEvent.of(saved.getId().toString(), "MEDICINE_CREATED", saved));
         return saved;
     }
 
     public List<Medicine> createMedicines(List<Medicine> medicines) {
         List<Medicine> saved = mediRepository.saveAll(medicines);
-        if (kafkaProducer != null) {
-            for (Medicine m : saved) {
-                kafkaProducer.publishMedicineEvent(AppEvent.of(m.getId().toString(), "MEDICINE_CREATED", m));
-            }
+        for (Medicine m : saved) {
+            domainEventPublisher.publishMedicineEvent(AppEvent.of(m.getId().toString(), "MEDICINE_CREATED", m));
         }
         return saved;
     }
@@ -56,7 +52,9 @@ public class MedicineService {
             updatedMedi.setCategory(medicine.getCategory());
             updatedMedi.setDescription(medicine.getDescription());
 
-            return mediRepository.save(updatedMedi);
+            Medicine saved = mediRepository.save(updatedMedi);
+            domainEventPublisher.publishMedicineEvent(AppEvent.of(saved.getId().toString(), "MEDICINE_UPDATED", saved));
+            return saved;
         }else {
             return null;
         }
@@ -86,7 +84,9 @@ public class MedicineService {
             if (medicine.getDescription() != null && medicine.getDescription().length() > 0){
                 updateMedi.setDescription(medicine.getDescription());
             }
-            return mediRepository.save(updateMedi);
+            Medicine saved = mediRepository.save(updateMedi);
+            domainEventPublisher.publishMedicineEvent(AppEvent.of(saved.getId().toString(), "MEDICINE_UPDATED", saved));
+            return saved;
         }else {
             throw new IdNotFoundException("Medicine Id is not found");
         }
@@ -94,6 +94,7 @@ public class MedicineService {
 
     public String deleteById(Long id) {
         mediRepository.deleteById(id);
+        domainEventPublisher.publishMedicineEvent(AppEvent.of(id.toString(), "MEDICINE_DELETED", null));
         return "Medicine " + id + " is deleted.";
     }
 

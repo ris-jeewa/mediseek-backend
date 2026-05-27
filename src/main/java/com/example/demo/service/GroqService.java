@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.example.demo.dto.AnalzeWithDoctorsDTO;
 import com.example.demo.dto.SymptomAnalysisResponse;
 import com.example.demo.entity.Doctor;
+import com.example.demo.messaging.AppEvent;
+import com.example.demo.messaging.DomainEventPublisher;
 import com.example.demo.repository.DoctorRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,10 +37,12 @@ public class GroqService {
 
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
+    private final DomainEventPublisher domainEventPublisher;
 
-    public GroqService(ObjectMapper objectMapper) {
+    public GroqService(ObjectMapper objectMapper, DomainEventPublisher domainEventPublisher) {
         this.restTemplate = new RestTemplate();
         this.objectMapper = objectMapper;
+        this.domainEventPublisher = domainEventPublisher;
     }
 
     public AnalzeWithDoctorsDTO analyzeSymptoms(String symptoms) {
@@ -87,8 +91,13 @@ public class GroqService {
                     entity,
                     String.class);
 
-            // Parse the response
-            return parseGroqResponse(response.getBody());
+            AnalzeWithDoctorsDTO result = parseGroqResponse(response.getBody());
+            int doctorCount = result.getDoctors() != null ? result.getDoctors().size() : 0;
+            domainEventPublisher.publishAppEvent(AppEvent.of(
+                    "symptom-analysis",
+                    "SYMPTOM_ANALYSIS_COMPLETED",
+                    Map.of("doctorCount", doctorCount)));
+            return result;
         } catch (Exception e) {
             throw new RuntimeException("Failed to analyze symptoms: " + e.getMessage(), e);
         }
